@@ -146,44 +146,112 @@ byId("clearHistory").addEventListener("click", ()=>{
 });
 
 // Guidance assistant (rule-based, no AI)
+// ==========================================
+// GUIDANCE ASSISTANT 🤖 (FIXED & IMPROVED)
+// ==========================================
+
 const chatBox = byId("chatBox");
 const chatInput = byId("chatInput");
+const sendBtn = byId("sendChat");
 const chatError = byId("chatError");
-const appendMsg = (text, who="bot")=>{
+
+// 1. Message Appender (UI Update)
+const appendMsg = (text, who = "bot") => {
   const d = document.createElement("div");
-  d.className = "msg " + (who==="me" ? "me":"bot");
-  d.textContent = text; // safe: no HTML injection
+  d.className = "msg " + (who === "me" ? "me" : "bot");
+  d.textContent = text; 
   chatBox.appendChild(d);
   chatBox.scrollTop = chatBox.scrollHeight;
 };
-const latestScore = ()=> {
+
+// 2. Smart Reply Logic (Brain)
+const getBotReply = (q) => {
+  const ql = q.toLowerCase();
+  const s = latestScore(); // Uses the score from your history function
+
+  // Keywords matching
+  if (ql.includes("company") || ql.includes("job") || ql.includes("placement")) {
+    if (s !== null && s >= 8.5) return "Based on your high score: Target Product-based companies (Google, Microsoft, Atlassian). Focus on DSA, System Design, and 2 major projects.";
+    return "Based on current performance: Start with Service-based companies (TCS, Infosys, Wipro). Focus on Aptitude, basic coding, and building a strong resume.";
+  }
+  
+  if (ql.includes("attendance")) return "Target 90% attendance. Use the 'Time Blocking' technique and find a study partner to stay accountable.";
+  
+  if (ql.includes("marks") || ql.includes("study") || ql.includes("exam")) return "To improve marks: Use 'Active Recall' and 'Spaced Repetition'. Solve previous year papers and analyze your weak topics.";
+  
+  if (ql.includes("diet") || ql.includes("food")) return "Brain food: Walnuts, eggs, plenty of water (3L/day), and avoid heavy sugary meals before study sessions.";
+  
+  if (ql.includes("sports") || ql.includes("gym")) return "Physical activity boosts focus! 45 mins of daily exercise is enough. Don't sacrifice sleep for gym.";
+
+  if (ql.includes("hello") || ql.includes("hi")) return "Hello! I am your academic guide. Ask me about Marks, Career, or Diet.";
+
+  return "I didn't understand that. Try asking about: 'Improve Marks', 'Placement Strategy', or 'Attendance Tips'.";
+};
+
+// 3. Quick Reply Buttons (New Feature)
+const showOptions = () => {
+  const options = ["Improve Marks", "Placement Strategy", "Diet Plan", "Low Attendance"];
+  const div = document.createElement("div");
+  div.className = "options-container";
+  
+  options.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "quick-btn";
+    btn.innerText = opt;
+    btn.onclick = () => handleUserAction(opt);
+    div.appendChild(btn);
+  });
+  
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+};
+
+// 4. Main Handler
+const handleUserAction = (text) => {
+  chatError.textContent = "";
+  if (!text) return;
+  
+  // Remove old buttons if any
+  const oldBtns = document.querySelectorAll(".options-container");
+  oldBtns.forEach(el => el.remove());
+
+  appendMsg(text, "me");
+  
+  // Simulate thinking delay
+  setTimeout(() => {
+    const reply = getBotReply(text);
+    appendMsg(reply, "bot");
+    
+    // Show buttons again after bot replies
+    setTimeout(showOptions, 500); 
+  }, 600);
+};
+
+// 5. Event Listeners
+sendBtn.addEventListener("click", () => {
+  const txt = chatInput.value.trim();
+  if (!txt) {
+    chatError.textContent = "Please type a message.";
+    return;
+  }
+  handleUserAction(txt);
+  chatInput.value = "";
+});
+
+chatInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") {
+    sendBtn.click();
+  }
+});
+
+// Helper: Get latest score from history for personalized advice
+const latestScore = () => {
   const h = getHistory();
   return h.length ? h[0].score : null;
 };
-const reply = (q)=>{
-  const ql = q.toLowerCase();
-  const s = latestScore();
 
-  if(ql.includes("company") || ql.includes("apply")){
-    if(s!==null && s>=8.5) return "Target top/product companies and research roles: Google, Microsoft, Adobe, Atlassian. Build 2 strong projects and practice DSA + system design basics.";
-    return "Start with solid foundations and consistent projects. Consider TCS, Infosys, Wipro, Accenture. Build resume + practice aptitude and coding rounds.";
-  }
-  if(ql.includes("attendance")) return "Aim for 90%+. Use time-blocking, morning classes, and accountability with a study buddy.";
-  if(ql.includes("marks") || ql.includes("improve")) return "Use active recall, spaced repetition, and weekly mock tests. Review errors and create a 'why I failed' log.";
-  if(ql.includes("sports")) return "Balance 45–60 mins training with study sprints. Prioritize sleep (7–8h), hydration, and post-training protein + carbs.";
-  if(ql.includes("diet") || ql.includes("food") || ql.includes("nutrition")) return "Balanced plates: protein (eggs, legumes), complex carbs (rice, oats), healthy fats (nuts). Hydrate 2–3L/day. Reduce sugar.";
-  if(ql.includes("time") || ql.includes("routine")) return "Use 50/10 focus cycles, weekly planning on Sunday, daily top-3 priorities, and phone-free study blocks.";
-  return "Great question! Share specifics (subject, target company, timeline) and I'll give you a focused plan.";
-};
-byId("sendChat").addEventListener("click", ()=>{
-  chatError.textContent = "";
-  const v = (chatInput.value || "").trim();
-  if(!v){ chatError.textContent = "Type a message."; return; }
-  if(v.length>500){ chatError.textContent = "Message too long (max 500)."; return; }
-  appendMsg(v, "me");
-  setTimeout(()=> appendMsg(reply(v), "bot"), 200);
-  chatInput.value = "";
-});
+// Initial Greeting with buttons
+setTimeout(showOptions, 1000);
 
 // Documents (local preview only)
 const fileInput = byId("fileInput");

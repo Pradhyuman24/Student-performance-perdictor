@@ -61,3 +61,24 @@ input:focus, select:focus, textarea:focus{ box-shadow: var(--ring); border-color
 .files{display:grid; gap:10px}
 .file{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08)}
 img.preview{max-height:80px; border-radius:8px; border:1px solid rgba(255,255,255,.08)}
+/* Chat Quick Options Styling */
+.options-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.quick-btn {
+  background: rgba(109, 211, 251, 0.1);
+  border: 1px solid rgba(109, 211, 251, 0.3);
+  color: var(--primary);
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+.quick-btn:hover {
+  background: var(--primary);
+  color: #000;
+}
